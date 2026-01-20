@@ -67,12 +67,18 @@
         <span class="liveDot"></span>
         <span>BREAKING / LIVE MONITOR</span>
     </div>
-    <div class="marquee">
-        {% for item in ticker_items %}
-            <span>{{ item }}</span>
-        {% endfor %}
+
+    <div class="tickerTrack">
+        <div class="tickerContent">
+            {% for item in social_items %}
+                <span class="tickerItem">
+                    {{ item.title }}
+                </span>
+            {% endfor %}
+        </div>
     </div>
 </div>
+
 
 <!-- KPI strip -->
 <div class="card heroCard">
