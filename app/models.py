@@ -57,6 +57,7 @@ class NewsItem(db.Model):
     source = db.Column(db.String(200))
     title = db.Column(db.String(200))
     text = db.Column(db.Text)
+    image_url = db.Column(db.String(300))
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

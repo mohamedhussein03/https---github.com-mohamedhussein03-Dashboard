@@ -1,6 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+import os
+import imghdr
+from uuid import uuid4
+
+from flask import Blueprint, render_template, request, redirect, url_for, current_app, abort
 from flask_login import login_required, current_user
 from datetime import datetime
+from werkzeug.utils import secure_filename
 
 from app.models import AuthorityItem
 from app.models import CallItem
@@ -19,6 +24,69 @@ from app.models import (
 )
 
 main_bp = Blueprint("main", __name__)
+
+
+ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif"}
+ALLOWED_IMAGE_MIMETYPES = {"image/png", "image/jpeg", "image/webp", "image/gif"}
+
+
+def _is_allowed_image_upload(file_storage) -> bool:
+    if not file_storage or not getattr(file_storage, "filename", ""):
+        return False
+
+    filename = secure_filename(file_storage.filename or "")
+    if "." not in filename:
+        return False
+
+    ext = filename.rsplit(".", 1)[1].lower()
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        return False
+
+    mimetype = (file_storage.mimetype or "").lower()
+    if mimetype not in ALLOWED_IMAGE_MIMETYPES:
+        return False
+
+    # Verify content is actually an image by signature (best-effort)
+    head = file_storage.stream.read(512)
+    file_storage.stream.seek(0)
+    kind = imghdr.what(None, h=head)
+    if kind is None:
+        return False
+
+    # imghdr returns 'jpeg' for jpg/jpeg; normalize webp/gif/png already match
+    if kind == "jpeg":
+        kind_ext = "jpg"
+    else:
+        kind_ext = kind
+
+    if kind_ext not in ALLOWED_IMAGE_EXTENSIONS:
+        return False
+
+    return True
+
+
+def _save_uploaded_image(file_storage) -> str:
+    """
+    Saves a validated image upload under app/static/uploads and returns the
+    URL path like /static/uploads/<filename>
+    """
+    if not _is_allowed_image_upload(file_storage):
+        abort(400, description="Invalid image upload")
+
+    upload_folder = current_app.config.get("UPLOAD_FOLDER")
+    if not upload_folder:
+        abort(500, description="UPLOAD_FOLDER not configured")
+
+    os.makedirs(upload_folder, exist_ok=True)
+
+    safe_name = secure_filename(file_storage.filename)
+    ext = safe_name.rsplit(".", 1)[1].lower()
+    final_name = f"{uuid4().hex}.{ext}"
+
+    save_path = os.path.join(upload_folder, final_name)
+    file_storage.save(save_path)
+
+    return f"/static/uploads/{final_name}"
 
 @main_bp.route("/")
 @login_required
@@ -150,6 +218,13 @@ def add_social():
 
     scenario = Scenario.query.filter_by(is_active=True).first()
 
+    uploaded = request.files.get("image_file")
+    uploaded_url = None
+    if uploaded and uploaded.filename:
+        uploaded_url = _save_uploaded_image(uploaded)
+
+    image_url = uploaded_url or request.form.get("image_url")
+
     item = SocialItem(
         scenario_id=scenario.id,
         channel=request.form.get("channel"),
@@ -159,7 +234,7 @@ def add_social():
         source=request.form.get("source"),
         title=request.form.get("title"),
         text=request.form.get("text"),
-        image_url=request.form.get("image_url"),
+        image_url=image_url,
         tags=request.form.get("tags"),
         created_at=datetime.utcnow()
     )
@@ -178,11 +253,19 @@ def add_news():
 
     scenario = Scenario.query.filter_by(is_active=True).first()
 
+    uploaded = request.files.get("image_file")
+    uploaded_url = None
+    if uploaded and uploaded.filename:
+        uploaded_url = _save_uploaded_image(uploaded)
+
+    image_url = uploaded_url or request.form.get("image_url")
+
     item = NewsItem(
         scenario_id=scenario.id,
         source=request.form.get("source"),
         title=request.form.get("title"),
         text=request.form.get("text"),
+        image_url=image_url,
         created_at=datetime.utcnow()
     )
 

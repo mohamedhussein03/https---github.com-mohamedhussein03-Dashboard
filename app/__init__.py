@@ -3,6 +3,7 @@ from .extensions import db, login_manager, migrate
 from .auth.routes import auth_bp
 from .main.routes import main_bp
 from flask_login import current_user
+import os
 
 
 def create_app():
@@ -12,6 +13,11 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)
+
+    # Ensure uploads folder exists
+    upload_folder = app.config.get("UPLOAD_FOLDER")
+    if upload_folder:
+        os.makedirs(upload_folder, exist_ok=True)
 
 
     from app import models
