@@ -32,7 +32,7 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
 
-        if username == "admin" and password == "admin":
+        if username == "admin" and password == "00123456":
             user = USERS["1"]
             login_user(user)
             return redirect(url_for("main.dashboard"))
