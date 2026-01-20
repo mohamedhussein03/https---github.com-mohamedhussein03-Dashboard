@@ -6,6 +6,12 @@ from app.models import AuthorityItem
 from app.models import CallItem
 from app.models import EmailItem
 
+import os
+import uuid
+from werkzeug.utils import secure_filename
+from flask import current_app
+
+
 
 
 from app.extensions import db
@@ -150,6 +156,8 @@ def add_social():
 
     scenario = Scenario.query.filter_by(is_active=True).first()
 
+    image_rel = _save_image(request.files.get("image"), "social")
+
     item = SocialItem(
         scenario_id=scenario.id,
         channel=request.form.get("channel"),
@@ -159,7 +167,7 @@ def add_social():
         source=request.form.get("source"),
         title=request.form.get("title"),
         text=request.form.get("text"),
-        image_url=request.form.get("image_url"),
+        image_path=image_rel,
         tags=request.form.get("tags"),
         created_at=datetime.utcnow()
     )
@@ -170,6 +178,7 @@ def add_social():
     return redirect(url_for("main.dashboard"))
 
 
+
 @main_bp.route("/news/add", methods=["POST"])
 @login_required
 def add_news():
@@ -178,11 +187,14 @@ def add_news():
 
     scenario = Scenario.query.filter_by(is_active=True).first()
 
+    image_rel = _save_image(request.files.get("image"), "news")
+
     item = NewsItem(
         scenario_id=scenario.id,
         source=request.form.get("source"),
         title=request.form.get("title"),
         text=request.form.get("text"),
+        image_path=image_rel,
         created_at=datetime.utcnow()
     )
 
@@ -190,6 +202,7 @@ def add_news():
     db.session.commit()
 
     return redirect(url_for("main.dashboard"))
+
 
 
 @main_bp.route("/calls/add", methods=["POST"])
@@ -298,3 +311,105 @@ def remove_incident():
 
     return redirect(url_for("main.incidents"))
 
+
+
+
+def _allowed_image(filename: str) -> bool:
+    if not filename:
+        return False
+    if "." not in filename:
+        return False
+    ext = filename.rsplit(".", 1)[1].lower()
+    return ext in current_app.config.get("ALLOWED_IMAGE_EXTENSIONS", set())
+
+
+def _save_image(file_storage, subdir: str) -> str | None:
+    if not file_storage:
+        return None
+
+    filename = file_storage.filename or ""
+    if filename.strip() == "":
+        return None
+
+    if not _allowed_image(filename):
+        return None
+
+    safe_name = secure_filename(filename)
+    uid = uuid.uuid4().hex
+    final_name = f"{uid}_{safe_name}"
+
+    upload_root = current_app.config["UPLOAD_FOLDER"]
+    target_dir = os.path.join(upload_root, subdir)
+    os.makedirs(target_dir, exist_ok=True)
+
+    abs_path = os.path.join(target_dir, final_name)
+    file_storage.save(abs_path)
+
+    return f"uploads/{subdir}/{final_name}"
+
+
+def _delete_image(rel_path: str | None) -> None:
+    if not rel_path:
+        return
+    if not rel_path.startswith("uploads/"):
+        return
+
+    abs_path = os.path.join(current_app.root_path, "static", rel_path)
+    try:
+        if os.path.exists(abs_path):
+            os.remove(abs_path)
+    except OSError:
+        pass
+
+
+@main_bp.route("/social/<int:item_id>/edit", methods=["POST"])
+@login_required
+def edit_social(item_id: int):
+    if current_user.role != "admin":
+        return redirect(url_for("main.dashboard"))
+
+    item = SocialItem.query.get_or_404(item_id)
+
+    item.channel = request.form.get("channel")
+    item.region = request.form.get("region")
+    item.classification = request.form.get("classification")
+    item.urgency = request.form.get("urgency")
+    item.source = request.form.get("source")
+    item.title = request.form.get("title")
+    item.text = request.form.get("text")
+    item.tags = request.form.get("tags")
+
+    new_image = request.files.get("image")
+    if new_image and (new_image.filename or "").strip() != "":
+        old = item.image_path
+        image_rel = _save_image(new_image, "social")
+        if image_rel:
+            item.image_path = image_rel
+            _delete_image(old)
+
+    db.session.commit()
+    return redirect(url_for("main.dashboard"))
+
+
+@main_bp.route("/news/<int:item_id>/edit", methods=["POST"])
+@login_required
+def edit_news(item_id: int):
+    if current_user.role != "admin":
+        return redirect(url_for("main.dashboard"))
+
+    item = NewsItem.query.get_or_404(item_id)
+
+    item.source = request.form.get("source")
+    item.title = request.form.get("title")
+    item.text = request.form.get("text")
+
+    new_image = request.files.get("image")
+    if new_image and (new_image.filename or "").strip() != "":
+        old = item.image_path
+        image_rel = _save_image(new_image, "news")
+        if image_rel:
+            item.image_path = image_rel
+            _delete_image(old)
+
+    db.session.commit()
+    return redirect(url_for("main.dashboard"))

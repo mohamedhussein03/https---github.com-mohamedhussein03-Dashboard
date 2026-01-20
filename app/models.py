@@ -33,6 +33,11 @@ class Scenario(db.Model):
     timeline = db.relationship("TimelineEvent", backref="scenario", lazy=True)
 
 
+from datetime import datetime
+from flask_login import UserMixin
+from app.extensions import db
+
+
 class SocialItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     scenario_id = db.Column(db.Integer, db.ForeignKey("scenario.id"), nullable=False)
@@ -44,10 +49,12 @@ class SocialItem(db.Model):
     source = db.Column(db.String(200))
     title = db.Column(db.String(200))
     text = db.Column(db.Text)
-    image_url = db.Column(db.String(300))
+
+    image_path = db.Column(db.String(300))
     tags = db.Column(db.String(300))
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class NewsItem(db.Model):
@@ -58,7 +65,11 @@ class NewsItem(db.Model):
     title = db.Column(db.String(200))
     text = db.Column(db.Text)
 
+    image_path = db.Column(db.String(300))
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 
 
 class CallItem(db.Model):

@@ -1,4 +1,4 @@
-<!-- SOCIAL ADD MODAL -->
+<!-- SOCIAL ADD / EDIT MODAL -->
 <div id="modal-social" class="modal">
     <div class="modal-overlay" onclick="closeModal('social')"></div>
     <div class="modal-panel">
@@ -8,12 +8,17 @@
             <button class="modal-close" onclick="closeModal('social')">Close</button>
         </div>
 
-        <form method="POST" action="{{ url_for('main.add_social') }}" class="modal-form">
+        <form method="POST"
+              action="{{ url_for('main.add_social') }}"
+              enctype="multipart/form-data"
+              id="socialForm">
+
+            <input type="hidden" id="socialEditId">
 
             <div class="form-grid">
                 <div>
                     <label>Channel</label>
-                    <select name="channel">
+                    <select name="channel" id="social_channel">
                         <option>X</option>
                         <option>Facebook</option>
                         <option>Instagram</option>
@@ -23,7 +28,7 @@
 
                 <div>
                     <label>Region</label>
-                    <select name="region">
+                    <select name="region" id="social_region">
                         <option>LOCAL</option>
                         <option>REGIONAL</option>
                         <option>INTERNATIONAL</option>
@@ -32,7 +37,7 @@
 
                 <div>
                     <label>Classification</label>
-                    <select name="classification">
+                    <select name="classification" id="social_classification">
                         <option>rumor</option>
                         <option>media</option>
                         <option>confirmed</option>
@@ -41,7 +46,7 @@
 
                 <div>
                     <label>Urgency</label>
-                    <select name="urgency">
+                    <select name="urgency" id="social_urgency">
                         <option>NORMAL</option>
                         <option>HIGH</option>
                     </select>
@@ -49,27 +54,38 @@
             </div>
 
             <label>Source / Handle</label>
-            <input name="source" required>
+            <input name="source" id="social_source" required>
 
             <label>Title</label>
-            <input name="title" required>
+            <input name="title" id="social_title" required>
 
             <label>Text</label>
-            <textarea name="text"></textarea>
+            <textarea name="text" id="social_text"></textarea>
 
             <div class="form-grid">
                 <div>
-                    <label>Image URL</label>
-                    <input name="image_url">
+                    <label>Image</label>
+                    <input type="file"
+                           name="image"
+                           id="socialImageInput"
+                           accept=".jpg,.jpeg,.png">
+                    <img id="socialImagePreview"
+                         class="dropzone-preview"
+                         style="display:none;">
                 </div>
 
                 <div>
                     <label>Tags</label>
-                    <input name="tags">
+                    <input name="tags" id="social_tags">
                 </div>
             </div>
 
-            <button type="submit" class="btn-submit">Add</button>
+            <button type="submit"
+                    class="btn-submit"
+                    id="socialSubmitBtn">
+                Add
+            </button>
+
         </form>
 
     </div>
@@ -106,7 +122,7 @@
 </div>
 
 
-<!-- NEWS MODAL -->
+<!-- NEWS ADD / EDIT MODAL -->
 <div id="modal-news" class="modal">
     <div class="modal-overlay" onclick="closeModal('news')"></div>
     <div class="modal-panel">
@@ -116,36 +132,37 @@
             <button class="modal-close" onclick="closeModal('news')">Close</button>
         </div>
 
-        <form method="POST" action="{{ url_for('main.add_news') }}" class="modal-form">
+        <form method="POST"
+              action="{{ url_for('main.add_news') }}"
+              enctype="multipart/form-data"
+              id="newsForm">
 
-            <div class="form-grid">
-                <div>
-                    <label>Region</label>
-                    <select name="region">
-                        <option>LOCAL</option>
-                        <option>INTERNATIONAL</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label>Urgency</label>
-                    <select name="urgency">
-                        <option>NORMAL</option>
-                        <option>HIGH</option>
-                    </select>
-                </div>
-            </div>
+            <input type="hidden" id="newsEditId">
 
             <label>Source</label>
-            <input name="source" required>
+            <input name="source" id="news_source" required>
 
             <label>Headline</label>
-            <input name="title" required>
+            <input name="title" id="news_title" required>
 
             <label>Text</label>
-            <textarea name="text"></textarea>
+            <textarea name="text" id="news_text"></textarea>
 
-            <button type="submit" class="btn-submit">Add</button>
+            <label>Image</label>
+            <input type="file"
+                   name="image"
+                   id="newsImageInput"
+                   accept=".jpg,.jpeg,.png">
+            <img id="newsImagePreview"
+                 class="dropzone-preview"
+                 style="display:none;">
+
+            <button type="submit"
+                    class="btn-submit"
+                    id="newsSubmitBtn">
+                Add
+            </button>
+
         </form>
 
     </div>
@@ -259,6 +276,7 @@
     </div>
 </div>
 
+
 <!-- AUTHORITY MODAL -->
 <div id="modal-authority" class="modal">
 
@@ -268,9 +286,7 @@
 
         <div class="modal-header">
             <h2>Add Authority Interaction</h2>
-            <button class="modal-close" onclick="closeModal('authority')">
-                Close
-            </button>
+            <button class="modal-close" onclick="closeModal('authority')">Close</button>
         </div>
 
         <form method="POST"
@@ -296,9 +312,7 @@
             <label>Action / Notes</label>
             <textarea name="action"></textarea>
 
-            <button type="submit" class="btn-submit">
-                Add
-            </button>
+            <button type="submit" class="btn-submit">Add</button>
 
         </form>
 

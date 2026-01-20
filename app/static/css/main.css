@@ -1113,3 +1113,50 @@ button:hover {
     }
 }
 
+.dropzone {
+    width: 100%;
+    border: 1px dashed rgba(255,255,255,0.25);
+    border-radius: 10px;
+    padding: 14px;
+    background: rgba(255,255,255,0.06);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.dropzone.dragover {
+    border-color: rgba(155, 206, 0, 0.9);
+}
+
+.dropzone input[type="file"] {
+    display: none;
+}
+
+.dropzone-text {
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+.dropzone-preview {
+    margin-top: 10px;
+    max-width: 100%;
+    max-height: 220px;
+    border-radius: 10px;
+    display: block;
+}
+
+.feed-item {
+    position: relative;
+}
+
+.feed-thumb {
+    width: 54px;
+    height: 54px;
+    object-fit: cover;
+    border-radius: 8px;
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    border: 1px solid rgba(0,0,0,0.08);
+}
+

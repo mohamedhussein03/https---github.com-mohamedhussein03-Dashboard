@@ -2,10 +2,8 @@
 
 {% block content %}
 
-<!-- Top cards row -->
 <div class="topbar">
 
-    <!-- BP / Scenario card -->
     <div class="card bp-card">
         <div class="bp-header">
             <div class="bp-title">BP</div>
@@ -37,7 +35,6 @@
         </div>
     </div>
 
-    <!-- Incident card -->
     <div class="card incident-card">
         <div class="card-header">
             <h3>Incident</h3>
@@ -52,16 +49,13 @@
         </div>
     </div>
 
-    <!-- Live Clock -->
     <div class="card live-clock-card">
         <h3>Live Clock</h3>
         <div class="clock" id="liveClock">--:--</div>
-
     </div>
 
 </div>
 
-<!-- Breaking ticker -->
 <div class="ticker">
     <div class="tickerTop">
         <span class="liveDot"></span>
@@ -79,8 +73,6 @@
     </div>
 </div>
 
-
-<!-- KPI strip -->
 <div class="card heroCard">
     <div class="heroOverlay">
         <div class="kpis">
@@ -108,10 +100,8 @@
     </div>
 </div>
 
-<!-- Main grid -->
 <div class="main two-col">
 
-<!-- Social Monitor -->
 <div class="card column-card">
     <div class="card-header">
         <div>
@@ -131,7 +121,12 @@
     <div class="card-body scroll">
         {% for item in social_items %}
             <div class="feed-item"
-                onclick="openSocialDetail(this)"
+                {% if is_admin %}
+                    onclick="openSocialEditFromEl(this)"
+                {% else %}
+                    onclick="openSocialDetailFromEl(this)"
+                {% endif %}
+                data-id="{{ item.id }}"
                 data-title="{{ item.title }}"
                 data-source="{{ item.source }}"
                 data-channel="{{ item.channel }}"
@@ -139,9 +134,13 @@
                 data-classification="{{ item.classification }}"
                 data-urgency="{{ item.urgency }}"
                 data-text="{{ item.text }}"
-                data-image="{{ item.image_url or '' }}"
+                data-tags="{{ item.tags or '' }}"
+                data-image="{% if item.image_path %}{{ url_for('static', filename=item.image_path) }}{% endif %}"
                 data-time="{{ item.created_at.strftime('%H:%M') }}">
 
+                {% if item.image_path %}
+                    <img class="feed-thumb" src="{{ url_for('static', filename=item.image_path) }}" alt="">
+                {% endif %}
 
                 <div class="feed-meta">
                     <span class="source">
@@ -175,8 +174,6 @@
     </div>
 </div>
 
-
-    <!-- News & Headlines -->
     <div class="card column-card">
         <div class="card-header">
             <div>
@@ -195,7 +192,19 @@
 
         <div class="card-body scroll">
             {% for item in news_items %}
-                <div class="feed-item">
+                <div class="feed-item"
+                     {% if is_admin %}
+                        onclick="openNewsEditFromEl(this)"
+                     {% endif %}
+                     data-id="{{ item.id }}"
+                     data-source="{{ item.source }}"
+                     data-title="{{ item.title }}"
+                     data-text="{{ item.text }}"
+                     data-image="{% if item.image_path %}{{ url_for('static', filename=item.image_path) }}{% endif %}">
+
+                    {% if item.image_path %}
+                        <img class="feed-thumb" src="{{ url_for('static', filename=item.image_path) }}" alt="">
+                    {% endif %}
 
                     <div class="feed-meta">
                         <span class="source">{{ item.source }}</span>
@@ -214,10 +223,6 @@
 
                     <div class="feed-tags">
                         <span class="tag media">media</span>
-                        <span class="tag {{ item.urgency|lower }}">
-                            {{ item.urgency }}
-                        </span>
-                        <span class="tag">{{ item.region }}</span>
                     </div>
 
                 </div>
