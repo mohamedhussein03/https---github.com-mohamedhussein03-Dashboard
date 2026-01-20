@@ -1,0 +1,52 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Calls</h1>
+    <div class="sub">Incoming calls + deadlines</div>
+  </div>
+
+  <div class="header-actions">
+    <span class="badge">{{ calls|length }}</span>
+    {% if is_admin %}
+    <button class="btn primary" onclick="openModal('calls')">+ Add</button>
+    {% endif %}
+  </div>
+</div>
+
+<div class="calls-list">
+  {% for call in calls %}
+  <div class="call-card">
+
+    <div class="call-top">
+      <div class="caller">{{ call.caller }}</div>
+      <div class="time">{{ call.created_at.strftime("%H:%M") }}</div>
+    </div>
+
+    <div class="call-title">
+      CALL · {{ call.summary[:60] }}
+    </div>
+
+    <div class="call-body">
+      {{ call.summary }}
+    </div>
+
+    <div class="call-tags">
+      <span class="tag media">media</span>
+      <span class="tag urgency {{ call.urgency|lower }}">{{ call.urgency|lower }}</span>
+      <span class="tag local">local</span>
+      <span class="tag inbound">Inbound</span>
+      <span class="tag action">Talking points needed</span>
+    <div class="call-tags">
+      {% if call.is_media %}<span class="tag media">media</span>{% endif %}
+      {% if call.urgency == "HIGH" %}<span class="tag high">high</span>{% endif %}
+      {% if call.is_local %}<span class="tag local">local</span>{% endif %}
+      {% if call.is_inbound %}<span class="tag inbound">Inbound</span>{% endif %}
+    </div>
+
+  {% endfor %}
+</div>
+
+{% include "dashboard/modals.html" %}
+{% endblock %}

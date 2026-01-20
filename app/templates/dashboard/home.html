@@ -1,0 +1,228 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<!-- Top cards row -->
+<div class="topbar">
+
+    <!-- BP / Scenario card -->
+    <div class="card bp-card">
+        <div class="bp-header">
+            <div class="bp-title">BP</div>
+            <div class="bp-meta">
+                <div class="bp-sub">BP Egypt</div>
+                <div class="bp-sub">Live Monitor</div>
+            </div>
+        </div>
+
+        <div class="bp-grid">
+            <div>
+                <span class="label">Location</span>
+                <span class="value">Egypt (national operations)</span>
+            </div>
+            <div>
+                <span class="label">Sector</span>
+                <span class="value">Energy / Oil & Gas</span>
+            </div>
+            <div>
+                <span class="label">Timezone</span>
+                <span class="value">Africa/Cairo</span>
+            </div>
+            <div>
+                <span class="label">Last updated</span>
+                <span class="value">
+                    {{ scenario.last_updated.strftime("%d %b %Y %H:%M") }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Incident card -->
+    <div class="card incident-card">
+        <div class="card-header">
+            <h3>Incident</h3>
+            <span class="badge">{{ scenario.status }}</span>
+        </div>
+
+        <strong>{{ scenario.title }}</strong>
+        <div class="sub">{{ scenario.window }}</div>
+
+        <div class="meta">
+            {{ scenario.description }}
+        </div>
+    </div>
+
+    <!-- Live Clock -->
+    <div class="card live-clock-card">
+        <h3>Live Clock</h3>
+        <div class="clock" id="liveClock">--:--</div>
+
+    </div>
+
+</div>
+
+<!-- Breaking ticker -->
+<div class="ticker">
+    <div class="tickerTop">
+        <span class="liveDot"></span>
+        <span>BREAKING / LIVE MONITOR</span>
+    </div>
+    <div class="marquee">
+        {% for item in ticker_items %}
+            <span>{{ item }}</span>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- KPI strip -->
+<div class="card heroCard">
+    <div class="heroOverlay">
+        <div class="kpis">
+            <div class="kpi">
+                <div class="n">{{ counts.social }}</div>
+                <div class="l">Social</div>
+            </div>
+            <div class="kpi">
+                <div class="n">{{ counts.rumors }}</div>
+                <div class="l">Rumors</div>
+            </div>
+            <div class="kpi">
+                <div class="n">{{ counts.news }}</div>
+                <div class="l">News</div>
+            </div>
+            <div class="kpi">
+                <div class="n">{{ counts.calls }}</div>
+                <div class="l">Calls</div>
+            </div>
+            <div class="kpi">
+                <div class="n">{{ counts.emails }}</div>
+                <div class="l">Emails</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main grid -->
+<div class="main two-col">
+
+<!-- Social Monitor -->
+<div class="card column-card">
+    <div class="card-header">
+        <div>
+            <h3>Social Monitor</h3>
+            <div class="sub">X / Facebook / IG / TikTok</div>
+        </div>
+        <div class="header-actions">
+            <span class="badge">{{ counts.social }}</span>
+            {% if is_admin %}
+                <button class="btn primary" onclick="openModal('social')">
+                    + Add
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card-body scroll">
+        {% for item in social_items %}
+            <div class="feed-item"
+                onclick="openSocialDetail(this)"
+                data-title="{{ item.title }}"
+                data-source="{{ item.source }}"
+                data-channel="{{ item.channel }}"
+                data-region="{{ item.region }}"
+                data-classification="{{ item.classification }}"
+                data-urgency="{{ item.urgency }}"
+                data-text="{{ item.text }}"
+                data-image="{{ item.image_url or '' }}"
+                data-time="{{ item.created_at.strftime('%H:%M') }}">
+
+
+                <div class="feed-meta">
+                    <span class="source">
+                        {{ item.classification|upper }} · {{ item.region|upper }} · {{ item.source }}
+                    </span>
+                    <span class="time">
+                        {{ item.created_at.strftime("%H:%M") }}
+                    </span>
+                </div>
+
+                <div class="feed-title">
+                    {{ item.title }}
+                </div>
+
+                <div class="feed-text">
+                    {{ item.text }}
+                </div>
+
+                <div class="feed-tags">
+                    <span class="tag">{{ item.classification }}</span>
+                    <span class="tag {{ item.urgency|lower }}">
+                        {{ item.urgency }}
+                    </span>
+                    <span class="tag">{{ item.region }}</span>
+                </div>
+
+            </div>
+        {% else %}
+            <div class="empty">No social activity</div>
+        {% endfor %}
+    </div>
+</div>
+
+
+    <!-- News & Headlines -->
+    <div class="card column-card">
+        <div class="card-header">
+            <div>
+                <h3>News & Headlines</h3>
+                <div class="sub">Local + international</div>
+            </div>
+            <div class="header-actions">
+                <span class="badge">{{ counts.news }}</span>
+                {% if is_admin %}
+                    <button class="btn primary" onclick="openModal('news')">
+                        + Add
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card-body scroll">
+            {% for item in news_items %}
+                <div class="feed-item">
+
+                    <div class="feed-meta">
+                        <span class="source">{{ item.source }}</span>
+                        <span class="time">
+                            {{ item.created_at.strftime("%H:%M") }}
+                        </span>
+                    </div>
+
+                    <div class="feed-title">
+                        {{ item.title }}
+                    </div>
+
+                    <div class="feed-text">
+                        {{ item.text }}
+                    </div>
+
+                    <div class="feed-tags">
+                        <span class="tag media">media</span>
+                        <span class="tag {{ item.urgency|lower }}">
+                            {{ item.urgency }}
+                        </span>
+                        <span class="tag">{{ item.region }}</span>
+                    </div>
+
+                </div>
+            {% else %}
+                <div class="empty">No headlines</div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+{% include "dashboard/modals.html" %}
+
+{% endblock %}

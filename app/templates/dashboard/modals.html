@@ -1,0 +1,307 @@
+<!-- SOCIAL ADD MODAL -->
+<div id="modal-social" class="modal">
+    <div class="modal-overlay" onclick="closeModal('social')"></div>
+    <div class="modal-panel">
+
+        <div class="modal-header">
+            <h2>Add Social</h2>
+            <button class="modal-close" onclick="closeModal('social')">Close</button>
+        </div>
+
+        <form method="POST" action="{{ url_for('main.add_social') }}" class="modal-form">
+
+            <div class="form-grid">
+                <div>
+                    <label>Channel</label>
+                    <select name="channel">
+                        <option>X</option>
+                        <option>Facebook</option>
+                        <option>Instagram</option>
+                        <option>TikTok</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Region</label>
+                    <select name="region">
+                        <option>LOCAL</option>
+                        <option>REGIONAL</option>
+                        <option>INTERNATIONAL</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Classification</label>
+                    <select name="classification">
+                        <option>rumor</option>
+                        <option>media</option>
+                        <option>confirmed</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Urgency</label>
+                    <select name="urgency">
+                        <option>NORMAL</option>
+                        <option>HIGH</option>
+                    </select>
+                </div>
+            </div>
+
+            <label>Source / Handle</label>
+            <input name="source" required>
+
+            <label>Title</label>
+            <input name="title" required>
+
+            <label>Text</label>
+            <textarea name="text"></textarea>
+
+            <div class="form-grid">
+                <div>
+                    <label>Image URL</label>
+                    <input name="image_url">
+                </div>
+
+                <div>
+                    <label>Tags</label>
+                    <input name="tags">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Add</button>
+        </form>
+
+    </div>
+</div>
+
+
+<!-- SOCIAL DETAIL MODAL -->
+<div id="modal-socialDetail" class="modal">
+    <div class="modal-overlay" onclick="closeModal('socialDetail')"></div>
+
+    <div class="modal-panel modal-wide">
+
+        <div class="modal-header">
+            <h2 id="sd-title"></h2>
+            <button class="modal-close" onclick="closeModal('socialDetail')">Close</button>
+        </div>
+
+        <div class="social-detail">
+
+            <div class="social-left">
+                <div class="social-meta" id="sd-meta"></div>
+                <div class="social-text" id="sd-text"></div>
+                <div class="social-tags" id="sd-tags"></div>
+            </div>
+
+            <div class="social-right" id="sd-image-wrap" style="display:none;">
+                <img id="sd-image" src="" alt="">
+                <div class="image-note">Image attached</div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+<!-- NEWS MODAL -->
+<div id="modal-news" class="modal">
+    <div class="modal-overlay" onclick="closeModal('news')"></div>
+    <div class="modal-panel">
+
+        <div class="modal-header">
+            <h2>Add Headline</h2>
+            <button class="modal-close" onclick="closeModal('news')">Close</button>
+        </div>
+
+        <form method="POST" action="{{ url_for('main.add_news') }}" class="modal-form">
+
+            <div class="form-grid">
+                <div>
+                    <label>Region</label>
+                    <select name="region">
+                        <option>LOCAL</option>
+                        <option>INTERNATIONAL</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Urgency</label>
+                    <select name="urgency">
+                        <option>NORMAL</option>
+                        <option>HIGH</option>
+                    </select>
+                </div>
+            </div>
+
+            <label>Source</label>
+            <input name="source" required>
+
+            <label>Headline</label>
+            <input name="title" required>
+
+            <label>Text</label>
+            <textarea name="text"></textarea>
+
+            <button type="submit" class="btn-submit">Add</button>
+        </form>
+
+    </div>
+</div>
+
+
+<!-- CALL MODAL -->
+<div id="modal-calls" class="modal">
+    <div class="modal-overlay" onclick="closeModal('calls')"></div>
+    <div class="modal-panel">
+
+        <div class="modal-header">
+            <h2>Add Call</h2>
+            <button class="modal-close" onclick="closeModal('calls')">Close</button>
+        </div>
+
+        <form method="POST" action="{{ url_for('main.add_call') }}" class="modal-form">
+
+            <label>Caller</label>
+            <input name="caller" required>
+
+            <label>Urgency</label>
+            <select name="urgency">
+                <option>NORMAL</option>
+                <option>HIGH</option>
+            </select>
+
+            <div class="form-grid">
+                <label><input type="checkbox" name="is_media"> Media</label>
+                <label><input type="checkbox" name="is_local"> Local</label>
+                <label><input type="checkbox" name="is_inbound" checked> Inbound</label>
+            </div>
+
+            <label>Summary</label>
+            <textarea name="summary" required></textarea>
+
+            <button type="submit" class="btn-submit">Add</button>
+        </form>
+
+    </div>
+</div>
+
+
+<!-- EMAIL MODAL -->
+<div id="modal-emails" class="modal">
+    <div class="modal-overlay" onclick="closeModal('emails')"></div>
+    <div class="modal-panel">
+
+        <div class="modal-header">
+            <h2>Add Email</h2>
+            <button class="modal-close" onclick="closeModal('emails')">Close</button>
+        </div>
+
+        <form method="POST" action="{{ url_for('main.add_email') }}" class="modal-form">
+
+            <label>Sender</label>
+            <input name="sender" required>
+
+            <label>Subject</label>
+            <input name="subject" required>
+
+            <label>Urgency</label>
+            <select name="urgency">
+                <option>NORMAL</option>
+                <option>HIGH</option>
+            </select>
+
+            <label>Body</label>
+            <textarea name="body"></textarea>
+
+            <button type="submit" class="btn-submit">Add</button>
+        </form>
+
+    </div>
+</div>
+
+
+<!-- INCIDENT MODAL -->
+<div id="modal-incident" class="modal">
+    <div class="modal-overlay" onclick="closeModal('incident')"></div>
+    <div class="modal-panel">
+
+        <div class="modal-header">
+            <h2>Add Incident</h2>
+            <button class="modal-close" onclick="closeModal('incident')">Close</button>
+        </div>
+
+        <form method="POST" action="{{ url_for('main.add_incident') }}" class="modal-form">
+
+            <label>Title</label>
+            <input name="title" required>
+
+            <label>Location</label>
+            <input name="location">
+
+            <label>Sector</label>
+            <input name="sector">
+
+            <label>Timezone</label>
+            <input name="timezone">
+
+            <label>Time Window</label>
+            <input name="window">
+
+            <label>Description</label>
+            <textarea name="description"></textarea>
+
+            <button type="submit" class="btn-submit">Activate Incident</button>
+        </form>
+
+    </div>
+</div>
+
+<!-- AUTHORITY MODAL -->
+<div id="modal-authority" class="modal">
+
+    <div class="modal-overlay" onclick="closeModal('authority')"></div>
+
+    <div class="modal-panel">
+
+        <div class="modal-header">
+            <h2>Add Authority Interaction</h2>
+            <button class="modal-close" onclick="closeModal('authority')">
+                Close
+            </button>
+        </div>
+
+        <form method="POST"
+              action="{{ url_for('main.add_authority') }}"
+              class="modal-form">
+
+            <div class="form-grid">
+                <div>
+                    <label>Authority Name</label>
+                    <input name="authority_name" required>
+                </div>
+
+                <div>
+                    <label>Status</label>
+                    <select name="status">
+                        <option>Notified</option>
+                        <option>Engaged</option>
+                        <option>Action Taken</option>
+                    </select>
+                </div>
+            </div>
+
+            <label>Action / Notes</label>
+            <textarea name="action"></textarea>
+
+            <button type="submit" class="btn-submit">
+                Add
+            </button>
+
+        </form>
+
+    </div>
+
+</div>

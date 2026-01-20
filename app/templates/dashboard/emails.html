@@ -1,0 +1,50 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>Emails</h1>
+
+    {% if is_admin %}
+    <button class="btn primary" onclick="openModal('emails')">+ Add Email</button>
+    {% endif %}
+</div>
+
+<div class="list">
+
+    {% for email in emails %}
+    <div class="email-card">
+
+        <div class="email-header">
+            <div class="email-subject">
+                {{ email.subject }}
+                <span class="urgency-pill {{ email.urgency|lower }}">
+                    {{ email.urgency }}
+                </span>
+            </div>
+
+            <div class="email-time">
+                {{ email.created_at.strftime("%d %b %Y · %H:%M") }}
+            </div>
+        </div>
+
+        <div class="email-meta">
+            From: <strong>{{ email.sender }}</strong>
+        </div>
+
+        <div class="email-body">
+            {{ email.body }}
+        </div>
+
+    </div>
+    {% else %}
+    <div class="empty">
+        No emails recorded
+    </div>
+    {% endfor %}
+
+</div>
+
+{% include "dashboard/modals.html" %}
+
+{% endblock %}

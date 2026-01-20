@@ -1,0 +1,5 @@
+{% macro admin_only(is_admin, js_action) %}
+    {% if is_admin %}
+        <button class="add-btn" onclick="{{ js_action }}">Add</button>
+    {% endif %}
+{% endmacro %}

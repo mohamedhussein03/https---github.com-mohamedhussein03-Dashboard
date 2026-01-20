@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="login-page">
+
+    <div class="login-container">
+
+        <div class="brand">
+            <div class="logo">bp</div>
+            <div class="slogan">
+                <span>Join us on our way to</span>
+                <strong>Net Zero</strong>
+            </div>
+        </div>
+
+        <div class="login-card">
+            <h2>Sign In</h2>
+
+            <form method="post">
+                <label>Username</label>
+                <input type="text" name="username">
+
+                <label>Password</label>
+                <input type="password" name="password">
+
+                <button type="submit" name="action" value="login">
+                    Sign In
+                </button>
+
+                <button type="submit" name="action" value="guest" class="guest-btn">
+                    Guest
+                </button>
+            </form>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="error">{{ messages[0] }}</div>
+                {% endif %}
+            {% endwith %}
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

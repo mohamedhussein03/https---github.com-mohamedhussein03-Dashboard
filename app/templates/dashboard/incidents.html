@@ -1,0 +1,55 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>Incident</h1>
+
+    {% if is_admin %}
+        <button class="btn primary" onclick="openModal('incident')">+ Add</button>
+        {% if incident %}
+        <form method="POST" action="{{ url_for('main.remove_incident') }}" style="display:inline;">
+        </form>
+        {% endif %}
+    {% endif %}
+</div>
+
+{% if incident %}
+<div class="card incident-card">
+    <div class="card-header">
+        <h3>{{ incident.title }}</h3>
+        <span class="badge active">{{ incident.status }}</span>
+    </div>
+
+    <div class="grid">
+        <div>
+            <span class="label">Location</span>
+            <span class="value">{{ incident.location }}</span>
+        </div>
+        <div>
+            <span class="label">Sector</span>
+            <span class="value">{{ incident.sector }}</span>
+        </div>
+        <div>
+            <span class="label">Timezone</span>
+            <span class="value">{{ incident.timezone }}</span>
+        </div>
+        <div>
+            <span class="label">Window</span>
+            <span class="value">{{ incident.window }}</span>
+        </div>
+    </div>
+
+    <p class="description">
+        {{ incident.description }}
+    </p>
+</div>
+{% else %}
+<div class="empty">
+    No active incident
+</div>
+{% endif %}
+
+{% include "dashboard/modals.html" %}
+
+{% endblock %}

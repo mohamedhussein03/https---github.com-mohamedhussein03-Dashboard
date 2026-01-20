@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crisis Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+<div class="app-layout">
+
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+            <img src="{{ url_for('static', filename='images/bp-logo.png') }}" alt="bp">
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('main.dashboard') }}">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+
+            <a href="{{ url_for('main.authority') }}">
+                <i class="fa-solid fa-building-shield"></i>
+                <span>Authority</span>
+            </a>
+
+            <a href="{{ url_for('main.calls') }}">
+                <i class="fa-solid fa-phone"></i>
+                <span>Calls</span>
+            </a>
+
+            <a href="{{ url_for('main.emails') }}">
+                <i class="fa-solid fa-envelope"></i>
+                <span>Emails</span>
+            </a>
+
+            <a href="{{ url_for('main.incidents') }}">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Incidents</span>
+            </a>
+        </nav>
+
+        <!-- LOGOUT INSIDE SIDEBAR -->
+        <div class="sidebar-footer">
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+
+    </aside>
+
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+
+</div>
+
+<!-- MODAL CONTROLLER -->
+<script>
+function openModal(name) {
+    const modal = document.getElementById("modal-" + name);
+    if (!modal) {
+        console.error("Modal missing:", name);
+        return;
+    }
+    modal.style.display = "flex";
+    modal.style.zIndex = "9999";
+}
+
+function closeModal(name) {
+    const modal = document.getElementById("modal-" + name);
+    if (modal) {
+        modal.style.display = "none";
+    }
+}
+</script>
+
+<!-- SOCIAL DETAIL HANDLER -->
+<script>
+function openSocialDetail(
+    id,
+    title,
+    source,
+    channel,
+    region,
+    classification,
+    urgency,
+    text,
+    imageUrl,
+    time
+) {
+    document.getElementById("socialTitle").innerText = title || "";
+    document.getElementById("socialText").innerText = text || "";
+
+    const meta = channel + " · " + region + " · " + source + " · " + time;
+    document.getElementById("socialMeta").innerText = meta;
+
+    const imageWrapper = document.getElementById("socialImageWrapper");
+    const imageEl = document.getElementById("socialImage");
+
+    if (imageUrl && imageUrl !== "None" && imageUrl.trim() !== "") {
+        imageEl.src = imageUrl;
+        imageWrapper.style.display = "block";
+    } else {
+        imageEl.src = "";
+        imageWrapper.style.display = "none";
+    }
+
+    openModal("socialDetail");
+}
+</script>
+
+<!-- DATASET SAFE OPENER -->
+<script>
+function openSocialDetailFromEl(el) {
+    openSocialDetail(
+        el.dataset.id || "",
+        el.dataset.title || "",
+        el.dataset.source || "",
+        el.dataset.channel || "",
+        el.dataset.region || "",
+        el.dataset.classification || "",
+        el.dataset.urgency || "",
+        el.dataset.text || "",
+        el.dataset.image || "",
+        el.dataset.time || ""
+    );
+}
+</script>
+
+<!-- LIVE CLOCK -->
+<script>
+function updateLiveClock() {
+    const now = new Date();
+
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+
+    const timeString = hours + ":" + minutes + ":" + seconds;
+
+    const clockEl = document.getElementById("liveClock");
+    if (clockEl) {
+        clockEl.textContent = timeString;
+    }
+}
+
+updateLiveClock();
+setInterval(updateLiveClock, 1000);
+</script>
+
+</body>
+</html>

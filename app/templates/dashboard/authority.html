@@ -1,0 +1,51 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Authority Interactions</h1>
+    <div class="sub">Regulators, ministries, coast guard</div>
+  </div>
+
+  {% if is_admin %}
+  <button class="btn primary" onclick="openModal('authority')">
+    + Add Authority Interaction
+  </button>
+  {% endif %}
+</div>
+
+<div class="card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Authority</th>
+        <th>Status</th>
+        <th>Action</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in authorities %}
+      <tr>
+        <td>{{ item.authority_name }}</td>
+        <td>
+          <span class="status {{ item.status|lower|replace(' ', '-') }}">
+            {{ item.status }}
+          </span>
+        </td>
+        <td>{{ item.action }}</td>
+        <td>{{ item.created_at.strftime("%H:%M") }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="4" class="empty">No authority interactions yet</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% include "dashboard/modals.html" %}
+
+{% endblock %}
