@@ -247,12 +247,12 @@
                 data-title="{{ item.title }}"
                 data-text="{{ item.text }}"
                 data-tags="{{ item.tags or '' }}"
-                data-image="{{ url_for('static', filename=item.image_path) if item.image_path else '' }}"
+                data-image="{{ url_for('static', filename=item.image_path.replace('app/static/', '') ) if item.image_path else '' }}"
                 data-time="{{ item.created_at.strftime('%H:%M') }}">
 
                 {% if item.image_path %}
                     <img class="feed-thumb"
-                         src="{{ url_for('static', filename=item.image_path) }}"
+                         src="{{ url_for('static', filename=item.image_path.replace('app/static/', '') ) }}"
                          alt="">
                 {% endif %}
 
@@ -304,11 +304,11 @@
                 data-source="{{ item.source }}"
                 data-title="{{ item.title }}"
                 data-text="{{ item.text }}"
-                data-image="{{ url_for('static', filename=item.image_path) if item.image_path else '' }}">
+                data-image="{{ url_for('static', filename=item.image_path.replace('app/static/', '') ) if item.image_path else '' }}">
 
                 {% if item.image_path %}
                     <img class="feed-thumb"
-                         src="{{ url_for('static', filename=item.image_path) }}"
+                         src="{{ url_for('static', filename=item.image_path.replace('app/static/', '') ) }}"
                          alt="">
                 {% endif %}
 
