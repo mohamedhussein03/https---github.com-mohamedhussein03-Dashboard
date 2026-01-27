@@ -1,10 +1,9 @@
 {% extends "dashboard/base.html" %}
-
 {% block content %}
 
+<!-- TOP ROW -->
 <div class="topbar">
 
-    <!-- BP Card -->
     <div class="card bp-card">
         <div class="bp-header">
             <div class="bp-title">bp</div>
@@ -29,312 +28,321 @@
             </div>
             <div>
                 <span class="label">Last updated</span>
-                <span class="value">
-                    {{ scenario.last_updated.strftime("%d %b %Y %H:%M") }}
-                </span>
+                <span class="value">{{ scenario.last_updated.strftime("%d %b %Y %H:%M") }}</span>
             </div>
         </div>
     </div>
 
-    <!-- Incident Card -->
     <div class="card incident-card">
+        <div class="incident-header">
+            <h3>Incident</h3>
+            <span class="incident-status">{{ scenario.status }}</span>
+        </div>
 
-    <div class="incident-header">
-        <h3>Incident</h3>
-        <span class="incident-status">{{ scenario.status }}</span>
+        <div class="incident-title">{{ scenario.title }}</div>
+
+        {% if scenario.window %}
+            <div class="incident-window">{{ scenario.window }}</div>
+        {% endif %}
+
+        {% if scenario.description %}
+            <div class="incident-description">{{ scenario.description }}</div>
+        {% endif %}
     </div>
 
-    <div class="incident-title">
-        {{ scenario.title }}
-    </div>
-
-    {% if scenario.window %}
-        <div class="incident-window">
-            {{ scenario.window }}
-        </div>
-    {% endif %}
-
-    {% if scenario.description %}
-        <div class="incident-description">
-            {{ scenario.description }}
-        </div>
-    {% endif %}
-
-</div>
-    <!-- Live Clock -->
     <div class="card live-clock-card">
         <h3>Live Clock</h3>
         <div class="clock" id="liveClock">--:--</div>
     </div>
 
-
-    <!-- Task Timer -->
     <div class="card timer-card">
+    <h3>Timer</h3>
 
-        <div class="card-header">
-            <h3>Task Timer</h3>
+    {% if task_timer %}
+        <div class="timer-title">
+            {{ task_timer.title }}
         </div>
+        <div id="timerEmpty" class="empty">No active timer</div>
 
-        <div id="timerEmpty" class="empty">
-            No active timer
-        </div>
+        <div id="timerActive">
 
-        <div id="timerActive" style="display:none;">
-            <div class="timer-title" id="timerTitle"></div>
-            <div class="timer-count" id="timerCountdown">00:00</div>
-            <div class="timer-alert" id="timerAlert" style="display:none;">
-                TIME EXPIRED
-            </div>
+    <div class="timer-title">
+        <strong>Title:</strong>
+        {{ task_timer.title }}
+    </div>
 
-            {% if is_admin %}
-                <button class="btn danger small" onclick="clearTimer()">
-                    Clear
-                </button>
+    <div class="timer-count"
+         id="timerCountdown"
+         data-remaining="{{ (task_timer.end_time - datetime.utcnow()).total_seconds() | int }}">
+        00:00
+    </div>
+
+    {% if task_timer.attendees or task_timer.next_meeting or task_timer.location %}
+        <div class="timer-meta">
+
+            {% if task_timer.attendees %}
+                <div>
+                    <strong>Attendees:</strong>
+                    {{ task_timer.attendees }}
+                </div>
             {% endif %}
+
+            {% if task_timer.next_meeting %}
+                <div>
+                    <strong>Next meeting:</strong>
+                    {{ task_timer.next_meeting }}
+                </div>
+            {% endif %}
+
+            {% if task_timer.location %}
+                <div>
+                    <strong>Location:</strong>
+                    {{ task_timer.location }}
+                </div>
+            {% endif %}
+
         </div>
+    {% endif %}
 
-        {% if is_admin %}
-            <button class="btn primary small" onclick="openModal('timer')">
-                Set Timer
-            </button>
-        {% endif %}
-
+    <div class="timer-alert"
+         id="timerAlert"
+         style="display:none;">
+        TIME EXPIRED
     </div>
 
 </div>
 
 
-
-<div class="card weather-card">
-
-    <div class="weather-header">
-        <h3>Weather</h3>
-
-        {% if weather_items|length > 1 %}
-            <div class="weather-nav">
-                <button type="button" onclick="weatherPrev()">‹</button>
-                <button type="button" onclick="weatherNext()">›</button>
-            </div>
-        {% endif %}
-    </div>
-
-    {% if weather_items %}
-
-        <div id="weatherData" style="display:none;">
-            {% for w in weather_items %}
-                <div
-                    data-temp="{{ w.temperature_c }}"
-                    data-feels="{{ w.feels_like_c or '' }}"
-                    data-humidity="{{ w.humidity or '' }}"
-                    data-air="{{ w.air_quality or '' }}"
-                    data-time="{{ w.created_at.strftime('%H:%M') }}">
-                </div>
-            {% endfor %}
-        </div>
-
-        <div class="weather-main">
-            <div class="weather-temp" id="weatherTemp"></div>
-            <div class="weather-feels" id="weatherFeels"></div>
-        </div>
-
-        <div class="weather-meta" id="weatherMeta"></div>
-
-        <div class="weather-time" id="weatherTime"></div>
-
         {% if is_admin %}
-            <button class="btn primary small" onclick="openModal('weather')">
-                Add entry
-            </button>
+            <form method="POST"
+                  action="{{ url_for('main.clear_task_timer') }}">
+                <button class="btn danger small">
+                    Clear timer
+                </button>
+            </form>
         {% endif %}
 
     {% else %}
-
-        <div class="empty">No weather data</div>
+        <div class="empty">No active timer</div>
 
         {% if is_admin %}
-            <button class="btn primary small" onclick="openModal('weather')">
-                Add
+            <button class="btn primary small"
+                    onclick="openModal('timer')">
+                Set Timer
             </button>
         {% endif %}
-
     {% endif %}
+    </div>
+
 
 </div>
 
-
-
-
-
-<div class="ticker">
-    <div class="tickerTop">
+<!-- LIVE MONITOR FULL WIDTH -->
+<div class="card live-monitor-wide">
+    <div class="live-monitor-header"
+         {% if is_admin %}
+             onclick="openModal('live-monitor')"
+             style="cursor:pointer"
+         {% endif %}>
         <span class="liveDot"></span>
-        <span>BREAKING / LIVE MONITOR</span>
+        <span class="bp-monitor-title">
+        <span class="bp-logo-text">bp</span> monitor
+        </span>
+
+
+        {% if is_admin %}
+            <span class="live-monitor-edit">Edit</span>
+        {% endif %}
     </div>
 
-    <div class="tickerTrack">
-        <div class="tickerContent">
-            {% for item in breaking_items %}
-                <span class="tickerItem">
-                {{ item.title }}
-                </span>
-                {% else %}
-                <span class="tickerItem">
-                No high urgency updates
-                </span>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<div class="card heroCard">
-    <div class="heroOverlay">
-        <div class="kpis">
-            <div class="kpi">
-                <div class="n">{{ counts.social }}</div>
-                <div class="l">Social</div>
+    <div class="live-monitor-roll">
+        {% if live_monitor_text %}
+            <div class="live-roll-text">
+                {{ live_monitor_text.text }}
             </div>
-            <div class="kpi">
-                <div class="n">{{ counts.rumors }}</div>
-                <div class="l">Rumors</div>
+        {% else %}
+            <div class="live-roll-text muted">
+                No live updates
             </div>
-            <div class="kpi">
-                <div class="n">{{ counts.news }}</div>
-                <div class="l">News</div>
-            </div>
-            <div class="kpi">
-                <div class="n">{{ counts.calls }}</div>
-                <div class="l">Calls</div>
-            </div>
-            <div class="kpi">
-                <div class="n">{{ counts.emails }}</div>
-                <div class="l">Emails</div>
-            </div>
-        </div>
+        {% endif %}
     </div>
 </div>
 
-<div class="main two-col">
 
- <!-- Social Monitor -->
-<div class="card column-card">
-    <div class="card-header">
-        <div>
-            <h3>Social Monitor</h3>
-            <div class="sub">X / Facebook / IG / TikTok</div>
-        </div>
-        <div class="header-actions">
-            <span class="badge">{{ counts.social }}</span>
+
+
+<!-- MAIN DASHBOARD GRID -->
+<div class="home-section">
+
+    <div class="weather-map-row">
+
+        <!-- Weather -->
+        <div class="card weather-card square-card">
+            <div class="weather-header">
+                <h3>Weather</h3>
+                {% if weather_items|length > 1 %}
+                    <div class="weather-nav">
+                        <button onclick="weatherPrev()">‹</button>
+                        <button onclick="weatherNext()">›</button>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if weather_items %}
+                <div id="weatherData" style="display:none;">
+                    {% for w in weather_items %}
+                        <div data-temp="{{ w.temperature_c }}"
+                             data-feels="{{ w.feels_like_c or '' }}"
+                             data-humidity="{{ w.humidity or '' }}"
+                             data-air="{{ w.air_quality or '' }}"
+                             data-time="{{ w.created_at.strftime('%H:%M') }}">
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="weather-main">
+                    <div class="weather-temp" id="weatherTemp"></div>
+                    <div class="weather-feels" id="weatherFeels"></div>
+                </div>
+
+                <div class="weather-meta" id="weatherMeta"></div>
+                <div class="weather-time" id="weatherTime"></div>
+            {% else %}
+                <div class="empty">No weather data</div>
+            {% endif %}
+
             {% if is_admin %}
-                <button class="btn primary" onclick="openModal('social')">+ Add</button>
+                <button class="btn primary small" onclick="openModal('weather')">Add entry</button>
             {% endif %}
         </div>
-    </div>
 
-    <div class="card-body scroll">
-        {% for item in social_items %}
-            <div class="feed-item"
-                {% if is_admin %}
-                    onclick="openSocialEditFromEl(this)"
-                {% else %}
-                    onclick="openSocialDetailFromEl(this)"
-                {% endif %}
+        <!-- Map -->
+        <div class="card map-card square-card">
+            <h3>Map</h3>
+
+            {% if map_items %}
+                <div class="map-list">
+                    {% for item in map_items %}
+                        <div class="map-item">
+                            <img src="{{ item.image_url }}">
+                            {% if item.description %}
+                                <div class="map-desc">{{ item.description }}</div>
+                            {% endif %}
+                            {% if is_admin %}
+                                <form method="POST"
+                                      action="{{ url_for('main.delete_map_item', item_id=item.id) }}">
+                                    <button class="btn danger small">Delete</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty">No map data</div>
+            {% endif %}
+
+            {% if is_admin %}
+                <button class="btn primary small" onclick="openModal('map')">Add map</button>
+            {% endif %}
+        </div>
+
+        <!-- Situational Status -->
+        <div class="card square-card">
+            <div class="card-header">
+                <h3>Situational Status</h3>
+            </div>
+
+            {% if situational_items %}
+                <div class="status-list">
+                    {% for item in situational_items %}
+                        <div class="status-item">
+                            <div class="status-title">{{ item.title }}</div>
+                            <div class="status-text">{{ item.text }}</div>
+                            <div class="status-time">{{ item.created_at.strftime("%H:%M") }}</div>
+
+                            {% if is_admin %}
+                                <form method="POST"
+                                      action="{{ url_for('main.delete_situational_status', item_id=item.id) }}">
+                                    <button class="btn danger small">Delete</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty">No status updates</div>
+            {% endif %}
+
+            {% if is_admin %}
+                <button class="btn primary small" onclick="openModal('situational')">Add status</button>
+            {% endif %}
+        </div>
+
+        <!-- Action Tracker -->
+        <div class="card square-card">
+            <div class="card-header">
+                <h3>Action Tracker</h3>
+            </div>
+
+            <div class="action-table-head">
+    <div>Action</div>
+    <div>Description</div>
+    <div>Owner</div>
+    <div>Stakeholder</div>
+    <div>Status</div>
+    {% if is_admin %}
+        <div></div>
+    {% endif %}
+</div>
+
+<div class="action-table-wrapper">
+    <table class="action-table">
+        <tbody>
+            {% for item in action_items %}
+            <tr
+                {% if is_admin %}onclick="openActionEdit(this)"{% endif %}
                 data-id="{{ item.id }}"
-                data-channel="{{ item.channel }}"
-                data-region="{{ item.region }}"
-                data-classification="{{ item.classification }}"
-                data-urgency="{{ item.urgency }}"
-                data-source="{{ item.source }}"
-                data-title="{{ item.title }}"
-                data-text="{{ item.text }}"
-                data-tags="{{ item.tags or '' }}"
-                data-image="{{ url_for('static', filename=item.image_path.replace('app/static/', '') ) if item.image_path else '' }}"
-                data-time="{{ item.created_at.strftime('%H:%M') }}">
-
-                {% if item.image_path %}
-                    <img class="feed-thumb"
-                         src="{{ url_for('static', filename=item.image_path.replace('app/static/', '') ) }}"
-                         alt="">
-                {% endif %}
-
-                <div class="feed-meta">
-                    <span class="source">
-                        {{ item.classification|upper }} · {{ item.region|upper }} · {{ item.source }}
+                data-action="{{ item.action }}"
+                data-description="{{ item.description }}"
+                data-owner="{{ item.owner }}"
+                data-stakeholder="{{ item.stakeholder }}"
+                data-status="{{ item.status }}"
+            >
+                <td>{{ item.action }}</td>
+                <td>{{ item.description }}</td>
+                <td>{{ item.owner }}</td>
+                <td>{{ item.stakeholder }}</td>
+                <td>
+                    <span class="status-pill {{ item.status }}">
+                        {{ item.status }}
                     </span>
-                    <span class="time">{{ item.created_at.strftime('%H:%M') }}</span>
-                </div>
-
-                <div class="feed-title">{{ item.title }}</div>
-                <div class="feed-text">{{ item.text }}</div>
-
-                <div class="feed-tags">
-                    <span class="tag">{{ item.classification }}</span>
-                    <span class="tag {{ item.urgency|lower }}">{{ item.urgency }}</span>
-                    <span class="tag">{{ item.region }}</span>
-                </div>
-
-            </div>
-        {% else %}
-            <div class="empty">No social activity</div>
-        {% endfor %}
-    </div>
-</div>
-
-<!-- News & Headlines -->
-<div class="card column-card">
-    <div class="card-header">
-        <div>
-            <h3>News & Headlines</h3>
-            <div class="sub">Local + international</div>
-        </div>
-        <div class="header-actions">
-            <span class="badge">{{ counts.news }}</span>
-            {% if is_admin %}
-                <button class="btn primary" onclick="openModal('news')">+ Add</button>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="card-body scroll">
-        {% for item in news_items %}
-            <div class="feed-item"
+                </td>
                 {% if is_admin %}
-                    onclick="openNewsEditFromEl(this)"
+                <td>
+                    <form method="POST"
+                          action="{{ url_for('main.delete_action_item', item_id=item.id) }}">
+                        <button class="btn danger small">✕</button>
+                    </form>
+                </td>
                 {% endif %}
-                data-id="{{ item.id }}"
-                data-source="{{ item.source }}"
-                data-title="{{ item.title }}"
-                data-text="{{ item.text }}"
-                data-image="{{ url_for('static', filename=item.image_path.replace('app/static/', '') ) if item.image_path else '' }}">
-
-                {% if item.image_path %}
-                    <img class="feed-thumb"
-                         src="{{ url_for('static', filename=item.image_path.replace('app/static/', '') ) }}"
-                         alt="">
-                {% endif %}
-
-                <div class="feed-meta">
-                    <span class="source">{{ item.source }}</span>
-                    <span class="time">{{ item.created_at.strftime('%H:%M') }}</span>
-                </div>
-
-                <div class="feed-title">{{ item.title }}</div>
-                <div class="feed-text">{{ item.text }}</div>
-
-                <div class="feed-tags">
-                    <span class="tag media">media</span>
-                </div>
-
-            </div>
-        {% else %}
-            <div class="empty">No headlines</div>
-        {% endfor %}
-    </div>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
+{% if is_admin %}
+    <button class="btn primary small" onclick="openModal('action')">
+        Add action
+    </button>
+{% endif %}
 
-<!-- Latest Calls - FULL WIDTH -->
-<div class="card calls-home-card">
+        </div>
 
+    </div>
+</div>
+<!-- CALLS FULL WIDTH -->
+<div class="card calls-wide">
     <div class="card-header">
         <h3>Latest Calls</h3>
         <span class="badge">{{ latest_calls|length }}</span>
@@ -348,31 +356,12 @@
                         <span class="caller">{{ call.caller }}</span>
                         <span class="time">{{ call.created_at.strftime("%H:%M") }}</span>
                     </div>
-
-                    <div class="calls-home-tags">
-                        {% if call.urgency == "HIGH" %}
-                            <span class="tag high">high</span>
-                        {% endif %}
-                        {% if call.is_media %}
-                            <span class="tag media">media</span>
-                        {% endif %}
-                        {% if call.is_local %}
-                            <span class="tag local">local</span>
-                        {% endif %}
-                    </div>
                 </div>
             {% endfor %}
         </div>
     {% else %}
         <div class="empty">No calls yet</div>
     {% endif %}
-
 </div>
-
-
-
-</div>
-
 {% include "dashboard/modals.html" %}
-
 {% endblock %}

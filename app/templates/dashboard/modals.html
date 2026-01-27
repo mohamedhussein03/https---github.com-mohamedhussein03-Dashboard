@@ -64,14 +64,12 @@
 
             <div class="form-grid">
                 <div>
-                    <label>Image</label>
-                    <input type="file"
-                           name="image"
-                           id="socialImageInput"
-                           accept=".jpg,.jpeg,.png">
-                    <img id="socialImagePreview"
-                         class="dropzone-preview"
-                         style="display:none;">
+                    <label>Image URL</label>
+                    <input
+                     type="url"
+                    name="image_url"
+                    placeholder="Image URL from internet"
+                    required>
                 </div>
 
                 <div>
@@ -149,13 +147,14 @@
             <textarea name="text" id="news_text"></textarea>
 
             <label>Image</label>
-            <input type="file"
-                   name="image"
-                   id="newsImageInput"
-                   accept=".jpg,.jpeg,.png">
-            <img id="newsImagePreview"
-                 class="dropzone-preview"
-                 style="display:none;">
+            <label>Image URL</label>
+            <input
+            type="url"
+            name="image_url"
+            placeholder="Image URL from internet"
+            required>
+
+
 
             <button type="submit"
                     class="btn-submit"
@@ -368,6 +367,33 @@
     </div>
 </div>
 
+<!-- MAP MODAL -->
+<div id="modal-map" class="modal">
+    <div class="modal-overlay" onclick="closeModal('map')"></div>
+
+    <div class="modal-panel">
+        <div class="modal-header">
+            <h2>Add Map Image</h2>
+            <button class="modal-close" onclick="closeModal('map')">Close</button>
+        </div>
+
+        <form method="POST" action="{{ url_for('main.add_map') }}" class="modal-form">
+
+            <label>Image URL</label>
+            <input name="image_url" required placeholder="https://example.com/map.jpg">
+
+            <label>Description</label>
+            <textarea name="description" placeholder="Optional description"></textarea>
+
+            <button type="submit" class="btn-submit">
+                Add Map
+            </button>
+
+        </form>
+    </div>
+</div>
+
+
 <div id="modal-timer" class="modal">
     <div class="modal-overlay" onclick="closeModal('timer')"></div>
 
@@ -377,16 +403,214 @@
             <button class="modal-close" onclick="closeModal('timer')">Close</button>
         </div>
 
-        <form onsubmit="startTimer(event)">
-            <label>Title</label>
-            <input id="timerInputTitle" required>
+        <form method="POST"
+      action="{{ url_for('main.create_task_timer') }}"
+      class="modal-form">
 
-            <label>Minutes</label>
-            <input type="number" id="timerInputMinutes" min="1" required>
+    <label>Title</label>
+    <input name="title" required>
+
+    <label>Duration (minutes)</label>
+    <input name="minutes" type="number" required>
+
+    <label>Attendees</label>
+    <textarea name="attendees"></textarea>
+
+    <label>Next meeting</label>
+    <textarea name="next_meeting"></textarea>
+
+    <label>Location</label>
+    <textarea name="location"></textarea>
+
+    <button type="submit" class="btn-submit">
+        Start Timer
+    </button>
+</form>
+
+    </div>
+</div>
+
+
+<!-- LIVE MONITOR MODAL -->
+<div id="modal-live-monitor" class="modal">
+    <div class="modal-overlay" onclick="closeModal('live-monitor')"></div>
+
+    <div class="modal-panel">
+        <div class="modal-header">
+            <h2>Live Monitor Update</h2>
+            <button class="modal-close" onclick="closeModal('live-monitor')">Close</button>
+        </div>
+
+        <form method="POST" action="{{ url_for('main.save_live_monitor') }}" class="modal-form">
+            <label>Live text</label>
+            <textarea name="text" required></textarea>
 
             <button type="submit" class="btn-submit">
-                Start
+                Update
             </button>
         </form>
     </div>
+</div>
+
+
+<!-- SITUATIONAL STATUS MODAL -->
+<div id="modal-situational" class="modal">
+    <div class="modal-overlay" onclick="closeModal('situational')"></div>
+
+    <div class="modal-panel">
+        <div class="modal-header">
+            <h2>Add Situational Status</h2>
+            <button class="modal-close" onclick="closeModal('situational')">Close</button>
+        </div>
+
+        <form method="POST" action="{{ url_for('main.add_situational_status') }}" class="modal-form">
+
+            <label>Title</label>
+            <input name="title" required>
+
+            <label>Details</label>
+            <textarea name="text" required></textarea>
+
+            <button type="submit" class="btn-submit">
+                Save
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ACTION TRACKER MODAL -->
+<div id="modal-action" class="modal">
+    <div class="modal-overlay" onclick="closeModal('action')"></div>
+
+    <div class="modal-panel large">
+        <div class="modal-header">
+            <h2>Add Action</h2>
+            <button class="modal-close" onclick="closeModal('action')">Close</button>
+        </div>
+
+        <form method="POST" action="{{ url_for('main.add_action_item') }}" class="modal-form">
+
+            <label>Action</label>
+            <input name="action" required>
+
+            <label>Description</label>
+            <textarea name="description" required></textarea>
+
+            <label>Owner</label>
+            <input name="owner" required>
+
+            <label>Stakeholder</label>
+            <input name="stakeholder" required>
+
+            <label>Status</label>
+            <select name="status">
+                <option value="none">none</option>
+                <option value="submitted">submitted</option>
+                <option value="pending">pending</option>
+                <option value="completed">completed</option>
+            </select>
+
+            <button type="submit" class="btn-submit">
+                Save Action
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ACTION TRACKER EDIT MODAL -->
+<div id="modal-action-edit" class="modal">
+    <div class="modal-overlay" onclick="closeModal('action-edit')"></div>
+
+    <div class="modal-panel large">
+        <div class="modal-header">
+            <h2>Edit Action</h2>
+            <button class="modal-close" onclick="closeModal('action-edit')">Close</button>
+        </div>
+
+        <form method="POST" id="actionEditForm" class="modal-form">
+            <label>Action</label>
+            <input name="action" id="edit_action" required>
+
+            <label>Description</label>
+            <textarea name="description" id="edit_description" required></textarea>
+
+            <label>Owner</label>
+            <input name="owner" id="edit_owner" required>
+
+            <label>Stakeholder</label>
+            <input name="stakeholder" id="edit_stakeholder" required>
+
+            <label>Status</label>
+            <select name="status" id="edit_status">
+                <option value="none">none</option>
+                <option value="submitted">submitted</option>
+                <option value="pending">pending</option>
+                <option value="completed">completed</option>
+            </select>
+
+            <button type="submit" class="btn-submit">
+                Save Changes
+            </button>
+        </form>
+    </div>
+</div>
+
+<div id="modal-socialResponse" class="modal">
+    <div class="modal-box">
+
+        <div class="modal-panel">
+    <div class="modal-header">
+        <h2>Add Social Comment / Response</h2>
+        <button class="modal-close" onclick="closeModal('socialResponse')">Close</button>
+    </div>
+
+    <form method="POST"
+          action="{{ url_for('main.add_social_response') }}"
+          class="modal-form">
+
+        <label>Title</label>
+        <input name="title" required>
+
+        <label>Text</label>
+        <textarea name="text" rows="4" required></textarea>
+
+        <button type="submit" class="btn-submit">
+            Submit
+        </button>
+    </form>
+</div>
+
+</div>
+
+
+<div id="modal-newsResponse" class="modal">
+    <div class="modal-content small">
+        <div class="modal-panel">
+
+            <div class="modal-header">
+                <h2>Add News Comment / Response</h2>
+                <button class="modal-close" onclick="closeModal('newsResponse')">Close</button>
+            </div>
+
+            <form method="POST"
+                  action="{{ url_for('main.add_news_response') }}"
+                  class="modal-form">
+
+                <label>Title</label>
+                <input name="title" required>
+
+                <label>Text</label>
+                <textarea name="text" rows="4" required></textarea>
+
+                <button type="submit" class="btn-submit">
+                    Submit
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
 </div>

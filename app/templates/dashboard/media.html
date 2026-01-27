@@ -1,0 +1,174 @@
+{% extends "dashboard/base.html" %}
+
+
+{% block content %}
+
+<h2>PIO Dashboard</h2>
+
+<!-- ROW 1: SOCIAL + NEWS -->
+<div class="main two-col">
+
+    <!-- Social Monitor -->
+    <div class="card column-card">
+        <div class="card-header">
+            <div>
+                <h3>Social Monitor</h3>
+                <div class="sub">X / Facebook / IG / TikTok</div>
+            </div>
+            <div class="header-actions">
+                <span class="badge">{{ counts.social }}</span>
+                {% if is_admin %}
+                    <button class="btn primary" onclick="openModal('social')">+ Add</button>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card-body scroll">
+            {% for item in social_items %}
+                <div class="feed-item"
+                     {% if is_admin %}
+                         onclick="openSocialEditFromEl(this)"
+                     {% else %}
+                         onclick="openSocialDetailFromEl(this)"
+                     {% endif %}
+                     data-id="{{ item.id }}"
+                     data-image="{{ item.image_url or '' }}">
+
+                    {% if item.image_url %}
+                        <img class="feed-thumb" src="{{ item.image_url }}">
+                    {% endif %}
+
+                    <div class="feed-meta">
+                        <span class="source">
+                            {{ item.classification|upper }} · {{ item.region|upper }} · {{ item.source }}
+                        </span>
+                        <span class="time">{{ item.created_at.strftime('%H:%M') }}</span>
+                    </div>
+
+                    <div class="feed-title">{{ item.title }}</div>
+                    <div class="feed-text">{{ item.text }}</div>
+
+                    <div class="feed-tags">
+                        <span class="tag">{{ item.classification }}</span>
+                        <span class="tag {{ item.urgency|lower }}">{{ item.urgency }}</span>
+                        <span class="tag">{{ item.region }}</span>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty">No social activity</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- News & Headlines -->
+    <div class="card column-card">
+        <div class="card-header">
+            <div>
+                <h3>News & Headlines</h3>
+                <div class="sub">Local + international</div>
+            </div>
+            <div class="header-actions">
+                <span class="badge">{{ counts.news }}</span>
+                {% if is_admin %}
+                    <button class="btn primary" onclick="openModal('news')">+ Add</button>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card-body scroll">
+            {% for item in news_items %}
+                <div class="feed-item"
+                     {% if is_admin %}
+                         onclick="openNewsEditFromEl(this)"
+                     {% endif %}>
+
+                    {% if item.image_url %}
+                        <img class="feed-thumb" src="{{ item.image_url }}">
+                    {% endif %}
+
+                    <div class="feed-meta">
+                        <span class="source">{{ item.source }}</span>
+                        <span class="time">{{ item.created_at.strftime('%H:%M') }}</span>
+                    </div>
+
+                    <div class="feed-title">{{ item.title }}</div>
+                    <div class="feed-text">{{ item.text }}</div>
+
+                    <div class="feed-tags">
+                        <span class="tag media">media</span>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty">No headlines</div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+<!-- ROW 2: RESPONSES -->
+<div class="main two-col">
+
+    <!-- Social Response -->
+    <div class="card column-card">
+        <div class="card-header">
+            <h3>Social Comment / Response</h3>
+            <button class="btn primary" onclick="openModal('socialResponse')">+ Add</button>
+        </div>
+
+        <div class="card-body scroll">
+            {% for item in social_responses %}
+                <div class="feed-item">
+                    <div class="feed-meta">
+                        <span class="source">{{ item.title }}</span>
+                        <span class="time">{{ item.created_at.strftime('%H:%M') }}</span>
+                    </div>
+                    <div class="feed-text">{{ item.text }}</div>
+
+                    {% if is_admin %}
+                        <form method="POST"
+                              action="{{ url_for('main.delete_social_response', item_id=item.id) }}">
+
+                            <button class="btn danger small">Delete</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="empty">No responses yet</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- News Response -->
+    <div class="card column-card">
+        <div class="card-header">
+            <h3>News Comment / Response</h3>
+            <button class="btn primary" onclick="openModal('newsResponse')">+ Add</button>
+        </div>
+
+        <div class="card-body scroll">
+            {% for item in news_responses %}
+                <div class="feed-item">
+                    <div class="feed-meta">
+                        <span class="source">{{ item.title }}</span>
+                        <span class="time">{{ item.created_at.strftime('%H:%M') }}</span>
+                    </div>
+                    <div class="feed-text">{{ item.text }}</div>
+
+                    {% if is_admin %}
+                        <form method="POST"
+                              action="{{ url_for('main.delete_news_response', item_id=item.id) }}">
+                            <button class="btn danger small">Delete</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="empty">No responses yet</div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+{% include "dashboard/modals.html" %}
+{% endblock %}

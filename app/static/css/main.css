@@ -1150,8 +1150,8 @@ button:hover {
 }
 
 .feed-thumb {
-    width: 54px;
-    height: 54px;
+    width: 200px;
+    height: 110px;
     object-fit: cover;
     border-radius: 8px;
     position: absolute;
@@ -1497,4 +1497,297 @@ body[data-theme="dark"] .logout-btn {
 body[data-theme="dark"] .tag {
     background-color: #1f2937;
     color: #d1d5db;
+}
+
+.weather-map-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+
+
+
+.square-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 360px;
+}
+
+
+.map-list {
+    display: grid;
+    gap: 12px;
+}
+
+.map-item img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.map-desc {
+    font-size: 13px;
+    color: #666;
+    margin-top: 4px;
+}
+
+
+
+.home-section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.weather-map-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.ticker,
+.calls-home-card {
+    width: 100%;
+}
+.monitor-calls-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+}
+
+.monitor-card {
+    min-height: 220px;
+}
+
+.calls-home-card {
+    width: 100%;
+    height: 100%;
+}
+
+.monitor-calls-row {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 24px;
+
+    width: 100%;
+    grid-column: 1 / -1;
+}
+
+.ticker {
+    min-height: 260px;
+}
+.live-monitor-card {
+    cursor: pointer;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.live-monitor-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.live-roll {
+    position: relative;
+    overflow: hidden;
+    height: 60px;
+}
+
+.live-roll-text {
+    position: absolute;
+    white-space: nowrap;
+    font-size: 32px;
+    font-weight: 800;
+    color: #d12525;
+    animation: liveScroll 4s linear infinite;
+}
+
+.live-roll-text.muted {
+    color: #999;
+    animation: none;
+}
+
+@keyframes liveScroll {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100vw);
+    }
+}
+
+.placeholder-card {
+    background: transparent;
+    border: 2px dashed #ddd;
+}
+.live-monitor-card,
+.calls-home-card {
+    width: 100%;
+}
+
+.status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.status-item {
+    border-left: 4px solid #ccc;
+    padding-left: 8px;
+}
+
+.status-title {
+    font-weight: 700;
+}
+
+.status-time {
+    font-size: 12px;
+    color: #777;
+}
+
+.action-table-wrapper {
+    overflow-x: auto;
+    max-height: 260px;
+}
+
+.action-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.action-table th {
+    position: sticky;
+    top: 0;
+    background: #f5f5f5;
+    text-align: left;
+    padding: 6px;
+    font-size: 12px;
+}
+
+.action-table td {
+    padding: 6px;
+    font-size: 13px;
+}
+
+.status-pill {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    text-transform: capitalize;
+}
+
+.status-pill.submitted {
+    background: #2196f3;
+    color: white;
+}
+
+.status-pill.pending {
+    background: #ffeb3b;
+    color: #333;
+}
+
+.status-pill.completed {
+    background: #4caf50;
+    color: white;
+}
+
+.status-pill.none {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.topbar {
+    grid-template-columns: 1.2fr 1.2fr 0.8fr 1fr;
+}
+
+.bp-card,
+.incident-card,
+.live-clock-card {
+    min-height: 120px;
+    padding: 12px;
+}
+
+.timer-card {
+    min-height: 120px;
+}
+.live-monitor-wide {
+    width: 100%;
+    margin-bottom: 16px;
+    padding: 16px;
+}
+
+.live-monitor-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+}
+
+.live-monitor-roll {
+    position: relative;
+    overflow: hidden;
+    height: 48px;
+    margin-top: 12px;
+}
+
+.calls-wide {
+    width: 100%;
+    margin-bottom: 24px;
+}
+.timer-meta {
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+.timer-meta div {
+    margin-bottom: 6px;
+}
+
+.timer-title {
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.action-table-head {
+display: grid;
+grid-template-columns: 1.2fr 2fr 1fr 1fr 1fr auto;
+gap: 8px;
+padding: 8px 6px;
+font-size: 12px;
+font-weight: 700;
+background: #f5f5f5;
+border-radius: 8px;
+margin-bottom: 6px;
+}
+
+.action-table-wrapper {
+max-height: 240px;
+overflow-y: auto;
+}
+
+.action-table {
+width: 100%;
+border-collapse: collapse;
+}
+
+.action-table td {
+padding: 6px;
+font-size: 13px;
+}
+
+.bp-monitor-title {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.bp-logo-text {
+    color: #009900;
+    font-weight: 800;
+    text-transform: lowercase;
 }

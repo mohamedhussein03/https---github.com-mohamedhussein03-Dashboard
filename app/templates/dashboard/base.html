@@ -42,6 +42,11 @@
                 <i class="fa-solid fa-triangle-exclamation"></i>
                 <span>Incidents</span>
             </a>
+            <a href="{{ url_for('main.media') }}">
+                <i class="fa-solid fa-globe"></i>
+                <span>PIO Dashboard</span>
+            </a>
+
         </nav>
         <div class="sidebar-footer">
 
@@ -370,34 +375,19 @@ function weatherNext() {
 let timerInterval = null;
 let timerSound = null;
 
+function renderDbTimer() {
+    const countdownEl = document.getElementById("timerCountdown");
+    const activeEl = document.getElementById("timerActive");
+    const emptyEl = document.getElementById("timerEmpty");
+    const alertEl = document.getElementById("timerAlert");
 
-function loadTimer() {
-    const data = localStorage.getItem("incidentTimer");
-    if (!data) return;
+    if (!countdownEl) return;
 
-    const timer = JSON.parse(data);
-    renderTimer(timer);
-}
+    let remaining = parseInt(countdownEl.dataset.remaining, 10);
+    if (isNaN(remaining) || remaining <= 0) return;
 
-function startTimer(e) {
-    e.preventDefault();
-
-    const title = document.getElementById("timerInputTitle").value;
-    const minutes = parseInt(document.getElementById("timerInputMinutes").value);
-
-    const endTime = Date.now() + minutes * 60 * 1000;
-
-    const timer = { title, endTime };
-    localStorage.setItem("incidentTimer", JSON.stringify(timer));
-
-    closeModal("timer");
-    renderTimer(timer);
-}
-
-function renderTimer(timer) {
-    document.getElementById("timerEmpty").style.display = "none";
-    document.getElementById("timerActive").style.display = "block";
-    document.getElementById("timerTitle").innerText = timer.title;
+    emptyEl.style.display = "none";
+    activeEl.style.display = "block";
 
     if (!timerSound) {
         timerSound = new Audio("/static/sounds/alert.mp3");
@@ -407,51 +397,31 @@ function renderTimer(timer) {
     if (timerInterval) clearInterval(timerInterval);
 
     timerInterval = setInterval(() => {
-        const remaining = timer.endTime - Date.now();
-
         if (remaining <= 0) {
-            document.getElementById("timerCountdown").innerText = "00:00";
-            document.getElementById("timerAlert").style.display = "block";
-            document.getElementById("timerCountdown").classList.add("expired");
-
+            countdownEl.innerText = "00:00";
+            alertEl.style.display = "block";
+            countdownEl.classList.add("expired");
             timerSound.play();
             clearInterval(timerInterval);
             timerInterval = null;
             return;
         }
 
-        const m = Math.floor(remaining / 60000);
-        const s = Math.floor((remaining % 60000) / 1000);
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
 
-        document.getElementById("timerCountdown").innerText =
-            String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+        countdownEl.innerText =
+            String(m).padStart(2, "0") + ":" +
+            String(s).padStart(2, "0");
+
+        remaining -= 1;
     }, 1000);
 }
 
-
-
-function clearTimer() {
-    localStorage.removeItem("incidentTimer");
-
-    if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-    }
-
-    if (timerSound) {
-        timerSound.pause();
-        timerSound.currentTime = 0;
-    }
-
-    document.getElementById("timerActive").style.display = "none";
-    document.getElementById("timerEmpty").style.display = "block";
-    document.getElementById("timerAlert").style.display = "none";
-    document.getElementById("timerCountdown").classList.remove("expired");
-}
-
-
-document.addEventListener("DOMContentLoaded", loadTimer);
+document.addEventListener("DOMContentLoaded", renderDbTimer);
 </script>
+
+
 
 <script>
 function toggleTheme() {
@@ -469,6 +439,22 @@ function toggleTheme() {
     }
 }
 </script>
+
+<script>
+function openActionEdit(el) {
+    const form = document.getElementById("actionEditForm");
+
+    document.getElementById("edit_action").value = el.dataset.action || "";
+    document.getElementById("edit_description").value = el.dataset.description || "";
+    document.getElementById("edit_owner").value = el.dataset.owner || "";
+    document.getElementById("edit_stakeholder").value = el.dataset.stakeholder || "";
+    document.getElementById("edit_status").value = el.dataset.status || "none";
+
+    form.action = "/actions/" + el.dataset.id + "/edit";
+    openModal("action-edit");
+}
+</script>
+
 
 
 </body>

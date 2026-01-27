@@ -1,17 +1,26 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from flask_login import login_required, current_user
-from datetime import datetime
+from datetime import datetime, timedelta
+from app.models import SocialResponse, NewsResponse
+
+
 
 from app.models import AuthorityItem
 from app.models import CallItem
 from app.models import EmailItem
 from app.models import WeatherItem
+from app.models import LiveMonitorText
+from app.models import SituationalStatus, ActionItem
+from app.models import TaskTimer
+
 
 
 import os
 import uuid
 from werkzeug.utils import secure_filename
 from flask import current_app
+from app.models import MapItem
+
 
 
 
@@ -32,8 +41,6 @@ main_bp = Blueprint("main", __name__)
 @login_required
 def dashboard():
     scenario = Scenario.query.filter_by(status="ACTIVE").first()
-    
-
 
     if not scenario:
         return "No active scenario configured", 500
@@ -47,13 +54,12 @@ def dashboard():
     ).order_by(NewsItem.created_at.desc()).all()
 
     latest_calls = (
-    CallItem.query
-    .filter_by(scenario_id=scenario.id)
-    .order_by(CallItem.created_at.desc())
-    .limit(5)
-    .all()
-)
-
+        CallItem.query
+        .filter_by(scenario_id=scenario.id)
+        .order_by(CallItem.created_at.desc())
+        .limit(5)
+        .all()
+    )
 
     authorities = AuthorityItem.query.filter_by(
         scenario_id=scenario.id
@@ -64,50 +70,76 @@ def dashboard():
     ).order_by(TimelineEvent.created_at.asc()).all()
 
     breaking_items = (
-    SocialItem.query
-    .filter_by(
-        scenario_id=scenario.id,
-        urgency="HIGH"
+        SocialItem.query
+        .filter_by(scenario_id=scenario.id, urgency="HIGH")
+        .order_by(SocialItem.created_at.desc())
+        .limit(10)
+        .all()
     )
-    .order_by(SocialItem.created_at.desc())
-    .limit(10)
-    .all()
-)
-
 
     emails = EmailItem.query.filter_by(
-    scenario_id=scenario.id
-     ).order_by(EmailItem.created_at.desc()).all()
-    
+        scenario_id=scenario.id
+    ).order_by(EmailItem.created_at.desc()).all()
+
     rumors_count = SocialItem.query.filter_by(
-    scenario_id=scenario.id,
-    classification="rumor"
+        scenario_id=scenario.id,
+        classification="rumor"
     ).count()
-    
+
     weather_items = (
-    WeatherItem.query
-    .filter_by(scenario_id=scenario.id)
-    .order_by(WeatherItem.created_at.desc())
-    .all()
+        WeatherItem.query
+        .filter_by(scenario_id=scenario.id)
+        .order_by(WeatherItem.created_at.desc())
+        .all()
     )
 
-    latest_weather = weather_items[0] if weather_items else None
+    map_items = (
+        MapItem.query
+        .filter_by(scenario_id=scenario.id)
+        .order_by(MapItem.created_at.desc())
+        .all()
+    )
+
+    situational_items = (
+        SituationalStatus.query
+        .filter_by(scenario_id=scenario.id)
+        .order_by(SituationalStatus.created_at.desc())
+        .all()
+    )
+
+
+  
+
+
+    action_items = (
+        ActionItem.query
+        .filter_by(scenario_id=scenario.id)
+        .order_by(ActionItem.created_at.desc())
+        .all()
+    )
+
+    task_timer = TaskTimer.query.filter_by(
+        scenario_id=scenario.id
+    ).first()
 
     calls_count = CallItem.query.filter_by(
-    scenario_id=scenario.id
+        scenario_id=scenario.id
     ).count()
 
-
-    
     counts = {
-    "social": len(social_items),
-    "news": len(news_items),
-    "calls": calls_count,
-    "emails": len(emails),
-    "authority": len(authorities),
-    "rumors": rumors_count
+        "social": len(social_items),
+        "news": len(news_items),
+        "calls": calls_count,
+        "emails": len(emails),
+        "authority": len(authorities),
+        "rumors": rumors_count
     }
+    
 
+
+    live_monitor_text = LiveMonitorText.query.filter_by(
+        scenario_id=scenario.id
+    ).first()
 
     return render_template(
         "dashboard/home.html",
@@ -120,9 +152,15 @@ def dashboard():
         timeline=timeline,
         breaking_items=breaking_items,
         weather_items=weather_items,
-        latest_weather=latest_weather,
+        map_items=map_items,
+        situational_items=situational_items,
+        action_items=action_items,
+        task_timer=task_timer,
+        live_monitor_text=live_monitor_text,
+        datetime=datetime,
         is_admin=(current_user.role == "admin")
     )
+
 
 
 @main_bp.route("/authority")
@@ -205,8 +243,6 @@ def add_social():
 
     scenario = Scenario.query.filter_by(status="ACTIVE").first()
 
-    image_rel = _save_image(request.files.get("image"), "social")
-
     item = SocialItem(
         scenario_id=scenario.id,
         channel=request.form.get("channel"),
@@ -216,15 +252,15 @@ def add_social():
         source=request.form.get("source"),
         title=request.form.get("title"),
         text=request.form.get("text"),
-        image_path=image_rel,
+        image_url=request.form.get("image_url"),   # CHANGED
         tags=request.form.get("tags"),
         created_at=datetime.utcnow()
     )
 
     db.session.add(item)
     db.session.commit()
-
     return redirect(url_for("main.dashboard"))
+
 
 
 
@@ -236,21 +272,19 @@ def add_news():
 
     scenario = Scenario.query.filter_by(status="ACTIVE").first()
 
-    image_rel = _save_image(request.files.get("image"), "news")
-
     item = NewsItem(
         scenario_id=scenario.id,
         source=request.form.get("source"),
         title=request.form.get("title"),
         text=request.form.get("text"),
-        image_path=image_rel,
+        image_url=request.form.get("image_url"),   # CHANGED
         created_at=datetime.utcnow()
     )
 
     db.session.add(item)
     db.session.commit()
-
     return redirect(url_for("main.dashboard"))
+
 
 
 
@@ -487,3 +521,326 @@ def add_weather():
     db.session.commit()
 
     return redirect(url_for("main.dashboard"))
+
+@main_bp.route("/media")
+@login_required
+def media():
+    scenario = Scenario.query.filter_by(status="ACTIVE").first()
+    if not scenario:
+        return "No active scenario", 500
+
+    social_items = (
+        SocialItem.query
+        .filter_by(scenario_id=scenario.id)
+        .order_by(SocialItem.created_at.desc())
+        .all()
+    )
+
+    news_items = (
+        NewsItem.query
+        .filter_by(scenario_id=scenario.id)
+        .order_by(NewsItem.created_at.desc())
+        .all()
+    )
+    news_responses = NewsResponse.query.filter_by(
+        scenario_id=scenario.id
+    ).order_by(NewsResponse.created_at.desc()).all()
+
+    social_responses = SocialResponse.query.filter_by(
+        scenario_id=scenario.id
+    ).order_by(SocialResponse.created_at.desc()).all()
+
+    counts = {
+        "social": len(social_items),
+        "news": len(news_items)
+    }
+
+    return render_template(
+        "dashboard/media.html",
+        social_items=social_items,
+        news_items=news_items,
+        counts=counts,
+        social_responses=social_responses,
+        news_responses=news_responses,
+        is_admin=(current_user.role == "admin")
+    )
+
+@main_bp.route("/map/add", methods=["POST"])
+@login_required
+def add_map():
+    if current_user.role != "admin":
+        return redirect(url_for("main.dashboard"))
+
+    scenario = Scenario.query.filter_by(status="ACTIVE").first()
+    if not scenario:
+        return redirect(url_for("main.dashboard"))
+
+    item = MapItem(
+        scenario_id=scenario.id,
+        image_url=request.form.get("image_url"),
+        description=request.form.get("description")
+    )
+
+    db.session.add(item)
+    db.session.commit()
+
+    return redirect(url_for("main.dashboard"))
+
+@main_bp.route("/live-monitor/save", methods=["POST"])
+@login_required
+def save_live_monitor():
+    if current_user.role != "admin":
+        return redirect(url_for("main.dashboard"))
+
+    scenario = Scenario.query.filter_by(status="ACTIVE").first()
+    if not scenario:
+        return redirect(url_for("main.dashboard"))
+
+    text = request.form.get("text", "").strip()
+    if not text:
+        return redirect(url_for("main.dashboard"))
+
+    existing = LiveMonitorText.query.filter_by(scenario_id=scenario.id).first()
+
+    if existing:
+        existing.text = text
+    else:
+        db.session.add(
+            LiveMonitorText(
+                scenario_id=scenario.id,
+                text=text
+            )
+        )
+
+    db.session.commit()
+    return redirect(url_for("main.dashboard"))
+
+@main_bp.route("/situational/add", methods=["POST"])
+@login_required
+def add_situational_status():
+    if current_user.role != "admin":
+        return redirect(url_for("main.dashboard"))
+
+    scenario = Scenario.query.filter_by(status="ACTIVE").first()
+    if not scenario:
+        return redirect(url_for("main.dashboard"))
+
+    title = request.form.get("title", "").strip()
+    text = request.form.get("text", "").strip()
+
+    if not title or not text:
+        return redirect(url_for("main.dashboard"))
+
+    item = SituationalStatus(
+        scenario_id=scenario.id,
+        title=title,
+        text=text
+    )
+
+    db.session.add(item)
+    db.session.commit()
+
+    return redirect(url_for("main.dashboard"))
+
+
+@main_bp.route("/situational/<int:item_id>/delete", methods=["POST"])
+@login_required
+def delete_situational_status(item_id):
+    if current_user.role != "admin":
+        return redirect(url_for("main.dashboard"))
+
+    item = SituationalStatus.query.get_or_404(item_id)
+    db.session.delete(item)
+    db.session.commit()
+
+    return redirect(url_for("main.dashboard"))
+
+@main_bp.route("/actions/add", methods=["POST"])
+@login_required
+def add_action_item():
+    if current_user.role != "admin":
+        return redirect(url_for("main.dashboard"))
+
+    scenario = Scenario.query.filter_by(status="ACTIVE").first()
+    if not scenario:
+        return redirect(url_for("main.dashboard"))
+
+    action = request.form.get("action", "").strip()
+    description = request.form.get("description", "").strip()
+    owner = request.form.get("owner", "").strip()
+    stakeholder = request.form.get("stakeholder", "").strip()
+    status = request.form.get("status", "none")
+
+    if not action or not description or not owner or not stakeholder:
+        return redirect(url_for("main.dashboard"))
+
+    item = ActionItem(
+        scenario_id=scenario.id,
+        action=action,
+        description=description,
+        owner=owner,
+        stakeholder=stakeholder,
+        status=status
+    )
+
+    db.session.add(item)
+    db.session.commit()
+
+    return redirect(url_for("main.dashboard"))
+
+@main_bp.route("/actions/<int:item_id>/edit", methods=["POST"])
+@login_required
+def edit_action_item(item_id):
+    if current_user.role != "admin":
+        return redirect(url_for("main.dashboard"))
+
+    item = ActionItem.query.get_or_404(item_id)
+
+    item.action = request.form.get("action", item.action)
+    item.description = request.form.get("description", item.description)
+    item.owner = request.form.get("owner", item.owner)
+    item.stakeholder = request.form.get("stakeholder", item.stakeholder)
+    item.status = request.form.get("status", item.status)
+
+    db.session.commit()
+
+    return redirect(url_for("main.dashboard"))
+
+@main_bp.route("/actions/<int:item_id>/delete", methods=["POST"])
+@login_required
+def delete_action_item(item_id):
+    if current_user.role != "admin":
+        return redirect(url_for("main.dashboard"))
+
+    item = ActionItem.query.get_or_404(item_id)
+    db.session.delete(item)
+    db.session.commit()
+
+    return redirect(url_for("main.dashboard"))
+
+@main_bp.route("/map/<int:item_id>/delete", methods=["POST"])
+@login_required
+def delete_map_item(item_id):
+    if current_user.role != "admin":
+        return redirect(url_for("main.dashboard"))
+
+    item = MapItem.query.get_or_404(item_id)
+    db.session.delete(item)
+    db.session.commit()
+
+    return redirect(url_for("main.dashboard"))
+
+@main_bp.route("/timer/create", methods=["POST"])
+@login_required
+def create_task_timer():
+    if current_user.role != "admin":
+        return redirect(url_for("main.dashboard"))
+
+    scenario = Scenario.query.filter_by(status="ACTIVE").first()
+    if not scenario:
+        return redirect(url_for("main.dashboard"))
+
+    title = request.form.get("title", "").strip()
+    minutes = request.form.get("minutes", type=int)
+
+    attendees = request.form.get("attendees", "").strip()
+    next_meeting = request.form.get("next_meeting", "").strip()
+    location = request.form.get("location", "").strip()
+
+    if not title or not minutes:
+        return redirect(url_for("main.dashboard"))
+
+    existing = TaskTimer.query.filter_by(scenario_id=scenario.id).first()
+    if existing:
+        db.session.delete(existing)
+        db.session.commit()
+
+    end_time = datetime.utcnow() + timedelta(minutes=minutes)
+
+    timer = TaskTimer(
+        scenario_id=scenario.id,
+        title=title,
+        end_time=end_time,
+        attendees=attendees,
+        next_meeting=next_meeting,
+        location=location
+    )
+
+    db.session.add(timer)
+    db.session.commit()
+
+    return redirect(url_for("main.dashboard"))
+
+@main_bp.route("/timer/clear", methods=["POST"])
+@login_required
+def clear_task_timer():
+    if current_user.role != "admin":
+        return redirect(url_for("main.dashboard"))
+
+    scenario = Scenario.query.filter_by(status="ACTIVE").first()
+    if not scenario:
+        return redirect(url_for("main.dashboard"))
+
+    timer = TaskTimer.query.filter_by(scenario_id=scenario.id).first()
+    if timer:
+        db.session.delete(timer)
+        db.session.commit()
+
+    return redirect(url_for("main.dashboard"))
+
+@main_bp.route("/social-response/add", methods=["POST"])
+def add_social_response():
+    scenario = Scenario.query.filter_by(status="ACTIVE").first()
+
+    item = SocialResponse(
+        scenario_id=scenario.id,
+        title=request.form.get("title"),
+        text=request.form.get("text")
+    )
+
+    db.session.add(item)
+    db.session.commit()
+
+    return redirect(request.referrer or url_for("main.media"))
+
+
+@main_bp.route("/social-response/<int:item_id>/delete", methods=["POST"])
+def delete_social_response(item_id):
+    item = SocialResponse.query.get_or_404(item_id)
+
+    db.session.delete(item)
+    db.session.commit()
+
+    return redirect(request.referrer or url_for("main.media"))
+
+
+
+@main_bp.route("/news-response/add", methods=["POST"])
+@login_required
+def add_news_response():
+    scenario = Scenario.query.filter_by(status="ACTIVE").first()
+    if not scenario:
+        return redirect(url_for("main.media"))
+
+    item = NewsResponse(
+        scenario_id=scenario.id,
+        title=request.form["title"],
+        text=request.form["text"]
+    )
+
+    db.session.add(item)
+    db.session.commit()
+
+    return redirect(request.referrer or url_for("main.media"))
+
+
+
+@main_bp.route("/news-response/<int:item_id>/delete", methods=["POST"])
+def delete_news_response(item_id):
+    item = NewsResponse.query.get_or_404(item_id)
+
+    db.session.delete(item)
+    db.session.commit()
+
+    return redirect(request.referrer or url_for("main.media"))
+
